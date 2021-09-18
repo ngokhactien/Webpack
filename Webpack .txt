@@ -1,0 +1,182 @@
+- Webpack dùng cho dự án lớn  , có tính tương tác người dùng cao
+- tăng tốc độ prject
+- giúp quản lý các modules (như file : js , jquery , css... . và các componnent )
+- và giúp các page nào cần và thực sự cần thì mới gọi module(jquery , css , ...) ko thì ko gọi
+- đóng gói các file thành 1 file dung nhất , nhờ loader có thể biên dịch các file khác nhau
+- các ( hình ảnh , css ) thành các module  
+- đóng gói thành module => giải quyết được vấn đề đường dẫn ko cần '../' và dùng thẳng tên module
+
+-Tóm tắt :
+	+ phân tách code
+	+ can thiệt sâu , can thiệt performance
+	+ đóng gói
+	+ chỉ load khi cần
+
+
+vd: các trang nào cần hình ảnh thì load ko thì ko load
+
+------------khởi tạo project-----------------------
+ - entry : đầu vào file bắt đầu
+- output : đầu ra file webpack
+ - mode : để tạo ra file người dùng xem . nếu để ' development ' thì sẽ tạo ra file cho dev xem còn để 'product' thì file gọn thế thế gọn nhất
+
+bước 1 : 
+	npm i --save-dev webpack  // nếu tạo ko đc với lỗi name đổi tên ko đc để tên webpack   và đổi tên trong package.json
+	npm i -g webpack   // để chạy
+bưới 2 tạo file :
+	- webpack.config.js
+	- const path = repuire('path')
+	const config = { 
+    		entry : './src/index.js',     				// đây là điểm bắt đầu file chạy js
+    		output : {		      				// đầu ra tạo ra file đóng gói
+        		filename : 'bundle.js',				// tạo file đóng gói , ko path thì nó để ngoài cùng thư mục , ; bundle.js này nó sẽ repuire từ file index.js rồi nó sẽ chạy code
+			path	:path.resolve(__dirname , 'build') 	// cái này tạo thư mục build chưa file bundle.js
+
+    		}
+	}
+
+	module.exports = config ;
+bước 3 : chạy npx webpack
+bước 4 : tại file index.html đổi đường dẫn đến <script src="./build/bundle.js"></script> // file đã build
+
+
+--------------------loader------------------
+- cho phép xử lý 1 file trước khi require (import) hoặc load vào
+- giúp chuyển đổi nhiều ngôn ngữ sang js thuần như JSX (reactjs) , css (repuire 1 file css vào bên trong js) , ES6 (ES2015)
+
+-------------------entry(cần)--------------------------------
+
+// entry : './src/index.js',                        // điểm bắt đầu , 1 file
+    // entry : {                                        // 2 file khác nhau
+    //     main : './src/index.js', 
+    //     test : './src/test.js', 
+    // },    
+    entry : {                                        // 1 file duy nhất
+        main :[
+            './src/index.js', 
+            './src/test.js', 
+        ] 
+    },    
+--------------------mode (cần) , devtool--------------------------
+- mode để tạo ra file webpack cho ai xem , và xem được dự án sai ở đâu , còn devtool chỉ xem được dự án sai ở đâu
+
+mode : 'development',      // or   devtool: 'inline-source-map'      
+
+
+-------------------Babel-----------------------------
+ - biến đổi ES6 (2015) thành ES5 code (trước đây chỉ có es5 code web nó chạy thôi)
+ 
+    - 1 số modlue :
+	- Babel-loader : hướng dẫn babel làm thế nào làm việc được với webpack
+	- babel-core :  lấy và phân tích mã ra 1 file 
+	- babel-preset-env : bộ quy tắc để nói , giải thích với bable về cú pháp ES5 , ES7 cần tìm
+          và làm thế nào để chuyển đổi thành ES5 code
+	- babel-preset-react : chuyển đổi code JSX (react-js) thành js
+ - cài đặt : npm install -D babel-loader @babel/core @babel/preset-env webpack
+	module: {
+  		rules: [
+    		{
+      			test: /\.m?js$/,
+      			exclude: /(node_modules|bower_components)/,
+      			use: {
+        			loader: 'babel-loader',
+        			options: {
+          			presets: ['@babel/preset-env']
+        			}
+      			}
+    		}
+ 		 ]
+	}
+
+
+-----------------clean(cần)----------------------
+- muốn xóa những file của webpack tạo ra ko dùng 
+
+output : {		      				// đầu ra tạo ra file đóng gói
+        	....
+		clean : true
+    	},
+
+//-----------watch-----------------
+	- watch : ko thể cập nhập khi sửa trong file webpack.config.js
+
+ cách 1 : npx webpack --watch
+ cách 2 : tại file webpack.config.js
+	thêm option :    watch: true,
+   
+   -	const config = { 
+	entry : './src/index.js',     				// đây là điểm bắt đầu file chạy js
+    	output : {		      				// đầu ra tạo ra file đóng gói
+        	filename : 'bundle.js',				// tạo file đóng gói , ko path thì nó để ngoài cùng thư mục , ; bundle.js này nó sẽ repuire từ file index.js rồi nó sẽ chạy code
+		path	:path.resolve(__dirname , 'build') 	// cái này tạo thư mục build chưa file bundle.js
+    	},
+	module:{
+        	rules : [
+            		{
+                		use : 'babel-loader',             // muốn dùng babel-loader
+                		test : /\.js$/                      // dùng cho tất cả các file 
+            		}
+        	]
+    	},
+	watch : true
+     }
+
+---------------plugin html ------------
+- dùng để tạo file html và nó sẽ quản lý và imprort những webpack thay đổi vào html (mỗi khi đổi tên file webpack ko cần vào html đổi lại)
+
+- npm i --save-dev html-webpack-plugin
+
+// webpack.config.js
+var HelloWorldPlugin = require('hello-world');
+
+module.exports = {
+  // ... configuration settings here ...
+   plugins: [                          // luôn lăng nghe của webpack thay đổi thì sẽ cập nhập lại tại html
+        new HelloWorldPlugin(           // mặc định ()
+            {
+                title : ' My Product' ,  // đặt title của html 
+                filename : 'index.html'   // cái này muốn đặt ở đâu và tên gì vd : ./src/test/mywebpack.html
+            }
+        )          
+    ],
+};
+
+
+-------------  chạy server-----------------------
+ devServer: {                        // dùng để chạy server cái này dùng lệnh riêng để chạy ở package phần dev
+        static: {                       // dùng để chạy  file html
+            directory: path.join(__dirname , './build/'),
+        },
+        compress: true, 
+        port: 9000, 
+        open : true                     // tự động mở trình duyệt
+    },
+
+-------------------Split webpack (dung lượng nhẹ)-----------------------
+lưu ý nhớ để 
+  	output :{
+		filename : '[name].js',
+	} 
+
+optimization: {                 // dùng để giải nét file nhẹ //và tạo file dùng chung cho sự án // nó sẽ tạo ra 1 file thư viện dùng chung cho những file nào cần
+        splitChunks: {
+            chunks: 'all',
+        },
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
